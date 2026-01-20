@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KeyHub Dashboard - KK Papar</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    
+    <style>
+        body { font-family: 'Poppins', sans-serif; background-color: #f4f7fe; padding-bottom: 120px; overflow-x: hidden; }
+        
+        /* RESTORED: Desktop Sidebar */
+        .sidebar { height: 100vh; background: white; width: 260px; position: fixed; top: 0; left: 0; padding-top: 2rem; z-index: 1000; box-shadow: 4px 0 15px rgba(0,0,0,0.03); }
+        .main-content { margin-left: 260px; padding: 2rem; transition: 0.3s; }
+
+        /* Responsive Purple Header */
+        .wallet-header { 
+            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%); 
+            border-radius: 0 0 35px 35px; color: white; 
+            padding: 2.5rem 1.5rem 5.5rem;
+            margin-bottom: -3.5rem; min-height: 180px;
+        }
+        .institute-logo { width: 115px; height: auto; object-fit: contain; background: transparent !important; }
+
+        /* SECTION 1: Clean Borrowing Section (Rectangle) */
+        .borrowing-island-main {
+            background: white; border-radius: 20px; padding: 1.5rem;
+            margin-bottom: 1.2rem; box-shadow: 0 8px 25px rgba(0,0,0,0.05);
+            text-align: center; border: 1px solid rgba(0,0,0,0.05);
+        }
+        .inner-item-box { background: #f8f9fa; border-radius: 15px; padding: 1rem; margin-top: 10px; border: 1px solid rgba(0,0,0,0.03); }
+
+        /* SECTION 2: Admin Tools (Uniform Size) */
+        .admin-tool-row { height: 55px; display: flex; align-items: center; justify-content: center; border-radius: 15px; margin-bottom: 0.8rem; width: 100%; font-size: 0.9rem; }
+        .external-scanner-box { 
+            background: white; border: 2px solid #764ba2; color: #764ba2; position: relative;
+            animation: pulse-border 2s infinite;
+        }
+        @keyframes pulse-border { 0% { border-color: #764ba2; } 50% { border-color: #667eea; } 100% { border-color: #764ba2; } }
+        .admin-action-card { background: white; border: 1px solid #764ba2; color: #764ba2; text-decoration: none; font-weight: 600; }
+
+        /* SECTION 3: Category Selection */
+        .category-card {
+            background: white; border-radius: 22px; padding: 1.2rem;
+            text-align: center; border: 2px solid transparent; transition: 0.3s;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05); height: 100%; color: #764ba2;
+        }
+        #btn-keys.selected { border-color: #764ba2; background: #f0ebf8; }
+        #btn-equipment.selected { border-color: #667eea; background: #e7f5ff; }
+
+        .icon-box-vibrant {
+            width: 55px; height: 55px; border-radius: 18px;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 12px; font-size: 1.6rem;
+            background: #f0ebf8; color: #764ba2;
+        }
+
+        /* SECTION 4: The Asset Island */
+        .asset-island {
+            background: white; border-radius: 30px 30px 0 0; padding: 2rem 1rem;
+            min-height: 400px; margin-top: 1.5rem; border-top: 1px solid rgba(0,0,0,0.05);
+            box-shadow: 0 -10px 30px rgba(0,0,0,0.03);
+        }
+        .asset-card { background: #f8f9fa; border-radius: 20px; padding: 1rem; border: none; text-align: center; }
+        .asset-section { display: none; }
+        .asset-section.active { display: block; }
+
+        /* Filter Chips */
+        .filter-chip {
+            display: inline-block; padding: 6px 18px; border-radius: 50px;
+            background: #f0f0f0; color: #6c757d; font-size: 0.8rem; margin-right: 6px; margin-bottom: 5px; cursor: pointer;
+        }
+        .filter-chip.active { background: #764ba2; color: white; }
+
+        /* Navigation */
+        .bottom-nav { position: fixed; bottom: 20px; left: 15px; right: 15px; background: white; border-radius: 25px; height: 75px; display: flex; justify-content: space-around; align-items: center; z-index: 2000; box-shadow: 0 15px 35px rgba(0,0,0,0.15); }
+        .nav-icon-btn { color: #b0b0b0; text-decoration: none; font-size: 0.7rem; display: flex; flex-direction: column; align-items: center; flex: 1; }
+        .nav-icon-btn.active { color: #764ba2; font-weight: 600; }
+        .scanner-center-wrapper { position: relative; top: -30px; background: #f4f7fe; padding: 8px; border-radius: 50%; }
+        .scanner-btn { width: 65px; height: 65px; background: linear-gradient(135deg, #764ba2 0%, #667eea 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.8rem; border: 5px solid white; }
+
+        @media (max-width: 991px) { 
+            .sidebar { display: none !important; } 
+            .main-content { margin-left: 0; padding: 0; } 
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar d-none d-lg-block text-center">
+        <div class="px-4 mb-4"><img src="{{ url_for('static', filename='logo.png') }}" class="img-fluid"></div>
+        <div class="list-group list-group-flush text-start">
+            <a href="{{ url_for('dashboard') }}" class="list-group-item list-group-item-action border-0 active-link px-4 py-3"><i class="bi bi-house-door me-3"></i> Home</a>
+            {% if current_user.role == 'admin' %}
+            <a href="{{ url_for('manage_users') }}" class="list-group-item list-group-item-action border-0 px-4 py-3"><i class="bi bi-people me-3"></i> Staff & Students</a>
+            <a href="{{ url_for('logs') }}" class="list-group-item list-group-item-action border-0 px-4 py-3"><i class="bi bi-journal-text me-3"></i> Logs</a>
+            <a href="{{ url_for('scan_page') }}" class="list-group-item list-group-item-action border-0 px-4 py-3"><i class="bi bi-qr-code-scan me-3"></i> Scanner Hub</a>
+            {% endif %}
+            <a href="{{ url_for('profile') }}" class="list-group-item list-group-item-action border-0 px-4 py-3"><i class="bi bi-person me-3"></i> Profile</a>
+            <a href="{{ url_for('logout') }}" class="list-group-item list-group-item-action border-0 text-danger px-4 py-3 mt-4"><i class="bi bi-box-arrow-left me-3"></i> Logout</a>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="wallet-header">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-6"><img src="{{ url_for('static', filename='logo.png') }}" class="institute-logo"></div>
+                    <div class="col-6 text-end">
+                        <p class="mb-0 opacity-75 small">Hello,</p>
+                        <h3 class="fw-bold mb-0" style="font-size: 1.1rem;">{{ current_user.username }}</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="container mt-n4">
+            <div class="borrowing-island-main">
+                <span class="fw-bold" style="color: #764ba2;">Currently Borrowed Assets</span>
+                {% if my_bookings %}
+                    {% for booking in my_bookings %}
+                    <div class="inner-item-box d-flex justify-content-between align-items-center">
+                        <div class="text-start">
+                            <h6 class="fw-bold mb-0 small">{{ booking.key.room_name }}</h6>
+                            <small class="text-muted" style="font-size: 0.7rem;">Status: {{ booking.status.capitalize() }}</small>
+                        </div>
+                        <button class="btn btn-primary btn-sm rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#qrModal{{ booking.id }}">Digital Key</button>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="inner-item-box text-muted small">No items currently borrowed.</div>
+                {% endif %}
+            </div>
+
+            {% if current_user.role == 'admin' %}
+            <div class="admin-tool-row external-scanner-box shadow-sm">
+                <input type="text" id="desktopInput" autofocus style="position: absolute; opacity: 0; pointer-events: none;">
+                <div class="spinner-grow text-primary me-2" style="width: 0.7rem; height: 0.7rem;"></div>
+                <span class="fw-bold" id="scanStatus">Scanner Active...</span>
+            </div>
+            <a href="{{ url_for('add_key') }}" class="admin-tool-row admin-action-card shadow-sm">
+                <i class="bi bi-plus-circle-fill me-2"></i> Register New Asset
+            </a>
+            {% endif %}
+
+            <div class="row g-3">
+                <div class="col-6">
+                    <button class="category-card w-100 shadow-sm" id="btn-keys" onclick="switchTab('keys')">
+                        <div class="icon-box-vibrant mb-2"><i class="bi bi-key-fill fs-3"></i></div>
+                        <span class="fw-bold small">Room Keys</span>
+                    </button>
+                </div>
+                <div class="col-6">
+                    <button class="category-card w-100 shadow-sm" id="btn-equipment" onclick="switchTab('equipment')">
+                        <div class="icon-box-vibrant mb-2"><i class="bi bi-laptop fs-3"></i></div>
+                        <span class="fw-bold small">Equipment</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="asset-island">
+                <div id="key-filters" class="asset-section mb-4">
+                    <h6 class="fw-bold mb-3 small">Browse Floor:</h6>
+                    <div class="d-flex overflow-auto pb-2" style="scrollbar-width: none;">
+                        <div class="filter-chip active" onclick="filterAras('all', this)">All</div>
+                        <div class="filter-chip" onclick="filterAras('Aras 1', this)">Aras 1</div>
+                        <div class="filter-chip" onclick="filterAras('Aras 2', this)">Aras 2</div>
+                        <div class="filter-chip" onclick="filterAras('Aras 3', this)">Aras 3</div>
+                        <div class="filter-chip" onclick="filterAras('Aras 4', this)">Aras 4</div>
+                    </div>
+                </div>
+
+                <div id="keys-container" class="asset-section">
+                    <div class="row g-3">
+                        {% for key in keys %}
+                        <div class="col-6 asset-item" data-level="{{ key.level }}">
+                            <div class="asset-card shadow-sm">
+                                <h6 class="fw-bold mb-2 small text-truncate">{{ key.room_name }}</h6>
+                                <button class="btn btn-primary btn-sm w-100 rounded-pill" data-bs-toggle="modal" data-bs-target="#borrowModal{{ key.id }}">Borrow</button>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div id="items-container" class="asset-section">
+                    <div class="row g-3">
+                        {% for item in items %}
+                        <div class="col-6">
+                            <div class="asset-card shadow-sm">
+                                <h6 class="fw-bold mb-2 small text-truncate">{{ item.room_name }}</h6>
+                                <button class="btn btn-primary btn-sm w-100 rounded-pill" data-bs-toggle="modal" data-bs-target="#borrowModal{{ item.id }}">Borrow</button>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div id="placeholder-text" class="text-center py-5">
+                    <i class="bi bi-grid-3x3-gap text-muted opacity-25" style="font-size: 3rem;"></i>
+                    <p class="text-muted small mt-2">Select category to browse assets</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% for asset in keys + items %}
+    <div class="modal fade" id="borrowModal{{ asset.id }}" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content border-0 rounded-4 p-3 shadow">
+                <div class="modal-body text-center">
+                    <h6 class="fw-bold">Request {{ asset.room_name }}?</h6>
+                    <form action="{{ url_for('request_key', key_id=asset.id) }}" method="POST">
+                        <select name="duration" class="form-select rounded-pill mb-3" style="font-size: 0.8rem;"><option value="4" selected>4 Hours</option></select>
+                        <button type="submit" class="btn btn-primary w-100 rounded-pill fw-bold btn-sm">Confirm</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+
+    {% for booking in my_bookings %}
+    <div class="modal fade" id="qrModal{{ booking.id }}" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered text-center">
+            <div class="modal-content border-0 rounded-4 p-4 shadow">
+                <h5 class="fw-bold mb-3">Campus Digital Ticket</h5>
+                <img src="{{ url_for('generate_qr', booking_id=booking.id) }}" class="img-fluid rounded mb-3" width="220">
+                <button class="btn btn-light w-100 rounded-pill" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+
+    <div class="bottom-nav d-lg-none">
+        <a href="{{ url_for('dashboard') }}" class="nav-icon-btn active"><i class="bi bi-house-door-fill fs-4"></i><span>Home</span></a>
+        <a href="{{ url_for('active_keys') }}" class="nav-icon-btn"><i class="bi bi-clock-history fs-4"></i><span>History</span></a>
+        {% if current_user.role == 'admin' %}
+        <div class="scanner-center-wrapper"><a href="{{ url_for('scan_page') }}" class="scanner-btn shadow"><i class="bi bi-qr-code-scan"></i></a></div>
+        {% else %}
+        <div class="nav-icon-btn opacity-25" style="pointer-events: none;"><i class="bi bi-shield-lock fs-4"></i><span>Secure</span></div>
+        {% endif %}
+        <a href="{{ url_for('profile') }}" class="nav-icon-btn"><i class="bi bi-person fs-4"></i><span>Profile</span></a>
+        <a href="{{ url_for('logout') }}" class="nav-icon-btn text-danger"><i class="bi bi-box-arrow-right fs-4"></i><span>Exit</span></a>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function switchTab(type) {
+            document.getElementById('placeholder-text').style.display = 'none';
+            document.getElementById('btn-keys').classList.remove('selected');
+            document.getElementById('btn-equipment').classList.remove('selected');
+            document.querySelectorAll('.asset-section').forEach(s => s.classList.remove('active'));
+            if (type === 'keys') {
+                document.getElementById('btn-keys').classList.add('selected');
+                document.getElementById('key-filters').classList.add('active');
+                document.getElementById('keys-container').classList.add('active');
+            } else {
+                document.getElementById('btn-equipment').classList.add('selected');
+                document.getElementById('items-container').classList.add('active');
+            }
+        }
+        function filterAras(level, btn) {
+            document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+            btn.classList.add('active');
+            document.querySelectorAll('#keys-container .asset-item').forEach(item => {
+                item.style.display = (level === 'all' || item.dataset.level === level) ? 'block' : 'none';
+            });
+        }
+        {% if current_user.role == 'admin' %}
+        const desktopInput = document.getElementById('desktopInput');
+        document.addEventListener('click', () => desktopInput.focus());
+        setInterval(() => { if (document.activeElement !== desktopInput) desktopInput.focus(); }, 1000);
+        desktopInput.addEventListener('keypress', function(e) { 
+            if (e.key === 'Enter') { 
+                const code = desktopInput.value.trim(); 
+                if (code) {
+                    document.getElementById('scanStatus').innerText = "Processing...";
+                    fetch('/scan_qr', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({qr_code: code}) })
+                    .then(res => res.json()).then(data => { 
+                        document.getElementById('scanStatus').innerText = data.message;
+                        if (data.status === 'success') setTimeout(() => location.reload(), 1000); 
+                    });
+                }
+                desktopInput.value = ''; 
+            } 
+        });
+        {% endif %}
+    </script>
+</body>
+</html>

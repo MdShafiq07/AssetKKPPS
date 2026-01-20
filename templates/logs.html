@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Activity Logs</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    
+    <style>
+        body { font-family: 'Poppins', sans-serif; background-color: #f4f6f9; }
+        .timeline-card {
+            border: none; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            background: white; padding: 1.5rem;
+        }
+        /* Style for the scrollable dropdown list */
+        .dropdown-menu-scrollable {
+            max-height: 300px;
+            overflow-y: auto;
+            border-radius: 15px;
+            border: none;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1) !important;
+        }
+        .table thead th { border-top: none; color: #764ba2; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px; }
+        .btn-dark { background: #212529; border: none; }
+        .badge { font-weight: 500; }
+    </style>
+</head>
+<body>
+
+    <div class="container mt-5 pb-5">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+            <div>
+                <h3 class="fw-bold mb-0">📋 Activity History</h3>
+                <p class="text-muted small mb-0">Full system audit trail</p>
+            </div>
+            <a href="{{ url_for('dashboard') }}" class="btn btn-light shadow-sm rounded-pill border px-4">
+                <i class="bi bi-arrow-left me-1"></i> Dashboard
+            </a>
+        </div>
+
+        <div class="d-flex justify-content-start mb-4">
+            <div class="btn-group shadow-sm">
+                <a href="{{ url_for('export_logs') }}" class="btn btn-dark rounded-start-pill px-4">
+                    <i class="bi bi-file-earmark-spreadsheet-fill me-2"></i>Export All
+                </a>
+                
+                <button type="button" class="btn btn-dark dropdown-toggle dropdown-toggle-split rounded-end-pill px-3" data-bs-toggle="dropdown" aria-expanded="false">
+                    <span class="visually-hidden">Toggle Dropdown</span>
+                </button>
+                
+                <ul class="dropdown-menu dropdown-menu-end dropdown-menu-scrollable mt-2">
+                    <li><h6 class="dropdown-header text-uppercase small fw-bold text-muted">Select Month</h6></li>
+                    {% for m in available_months %}
+                        {% set month_names = ["", "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"] %}
+                        <li>
+                            <a class="dropdown-item py-2 d-flex justify-content-between align-items-center" href="{{ url_for('export_logs', month=m.month|int, year=m.year|int) }}">
+                                <span>{{ month_names[m.month|int] }} {{ m.year|int }}</span>
+                                <i class="bi bi-download text-muted small ms-3"></i>
+                            </a>
+                        </li>
+                    {% endfor %}
+                    
+                    {% if not available_months %}
+                        <li><span class="dropdown-item-text text-muted small text-center">No monthly logs found</span></li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+
+        <div class="timeline-card">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>User</th>
+                            <th>Action</th>
+                            <th>Key / Room</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for log in logs %}
+                        <tr>
+                            <td class="text-muted small">
+                                {{ log.timestamp.strftime('%Y-%m-%d') }} <br>
+                                <strong>{{ log.timestamp.strftime('%H:%M:%S') }}</strong>
+                            </td>
+                            
+                            <td class="fw-bold text-dark">{{ log.user.username }}</td>
+                            
+                            <td>
+                                {% if log.action == 'Picked Up' %}
+                                    <span class="badge bg-primary rounded-pill px-3">Picked Up</span>
+                                {% elif log.action == 'Returned' %}
+                                    <span class="badge bg-success rounded-pill px-3">Returned</span>
+                                {% elif 'Manual' in log.action %}
+                                    <span class="badge bg-danger rounded-pill px-3">Manual Return</span>
+                                {% else %}
+                                    <span class="badge bg-secondary rounded-pill px-3">{{ log.action }}</span>
+                                {% endif %}
+                            </td>
+                            
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="rounded-circle bg-light d-flex align-items-center justify-content-center me-2" style="width: 35px; height: 35px;">
+                                        <i class="bi bi-key-fill text-primary"></i>
+                                    </div>
+                                    <div>
+                                        <div class="fw-semibold">{{ log.key.room_name }}</div>
+                                        <div class="text-muted extra-small" style="font-size: 0.75rem;">ID: {{ log.key.key_number }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="4" class="text-center py-5">
+                                <i class="bi bi-inbox text-muted display-4"></i>
+                                <p class="text-muted mt-2">No activity recorded yet.</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

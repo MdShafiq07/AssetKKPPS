@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Inventory - KeyHub</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Poppins', sans-serif; background-color: #f8f9fa; padding-bottom: 50px; }
+        .glass-card { background: white; border-radius: 20px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.05); margin-bottom: 2rem; }
+        
+        /* Unified Button Theme */
+        .btn-primary, .btn-process { 
+            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%); 
+            border: none; color: white; 
+        }
+        .btn-primary:hover, .btn-process:hover {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+            color: white;
+        }
+        
+        .form-label { font-weight: 600; color: #555; }
+        .type-selector { background: #f0ebf8; border-radius: 15px; padding: 10px; }
+        .batch-section { border-top: 2px dashed #eee; padding-top: 2rem; margin-top: 2rem; }
+    </style>
+</head>
+<body>
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-7 col-lg-6">
+            <div class="d-flex align-items-center mb-4">
+                <a href="{{ url_for('dashboard') }}" class="btn btn-light rounded-circle me-3 shadow-sm"><i class="bi bi-arrow-left"></i></a>
+                <h3 class="fw-bold mb-0">Inventory Manager</h3>
+            </div>
+
+            <div class="card glass-card p-4">
+                <h5 class="fw-bold mb-4 text-primary">Manual Entry</h5>
+                <form action="{{ url_for('add_key') }}" method="POST">
+                    <div class="mb-4">
+                        <label class="form-label d-block text-muted small">Choose Category</label>
+                        <div class="btn-group w-100 type-selector" role="group">
+                            <input type="radio" class="btn-check" name="type" id="typeKey" value="Key" checked onclick="toggleAssetType('Key')">
+                            <label class="btn btn-outline-primary border-0 rounded-3 py-2 fw-bold" for="typeKey">Room Key</label>
+                            <input type="radio" class="btn-check" name="type" id="typeItem" value="Item" onclick="toggleAssetType('Item')">
+                            <label class="btn btn-outline-primary border-0 rounded-3 py-2 fw-bold" for="typeItem">Equipment</label>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label id="nameLabel" class="form-label small text-muted">Room/Item Name</label>
+                        <input type="text" name="room_name" class="form-control rounded-3" placeholder="e.g. BK101" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label id="idLabel" class="form-label small text-muted">ID / Serial Number</label>
+                        <input type="text" name="key_number" class="form-control rounded-3" placeholder="e.g. 0001" required>
+                    </div>
+
+                    <div id="levelSection" class="mb-4">
+                        <label class="form-label small text-muted">Aras (Level)</label>
+                        <select name="level" class="form-select rounded-3">
+                            <option value="Aras 1">Aras 1</option>
+                            <option value="Aras 2">Aras 2</option>
+                            <option value="Aras 3">Aras 3</option>
+                            <option value="Aras 4">Aras 4</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 py-3 fw-bold rounded-pill shadow-sm">Save Asset</button>
+                </form>
+
+                <div class="batch-section">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="fw-bold mb-0">Batch Operations</h5>
+                        
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-outline-primary rounded-pill dropdown-toggle fw-bold" type="button" data-bs-toggle="dropdown">
+                                <i class="bi bi-download me-1"></i> Get Template
+                            </button>
+                            <ul class="dropdown-menu shadow border-0">
+                                <li><a class="dropdown-item small" href="{{ url_for('download_template', type='Key') }}">🔑 For Room Keys</a></li>
+                                <li><a class="dropdown-item small" href="{{ url_for('download_template', type='Item') }}">💻 For Equipment</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <form action="{{ url_for('validate_batch') }}" method="POST" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label class="form-label small text-muted">Select Action</label>
+                            <select name="batch_action" class="form-select rounded-3">
+                                <option value="add">Batch Add (New Items)</option>
+                                <option value="delete">Batch Delete (Existing IDs)</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="form-label small text-muted">Upload CSV File</label>
+                            <input type="file" name="csv_file" class="form-control" accept=".csv" required>
+                            <div class="form-text mt-2 small">
+                                <i class="bi bi-info-circle me-1"></i> Ensure you use the correct template for your asset type.
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-process w-100 py-3 rounded-pill fw-bold shadow-sm">
+                            Process CSV
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    function toggleAssetType(type) {
+        const levelSection = document.getElementById('levelSection');
+        const levelSelect = levelSection.querySelector('select');
+        if (type === 'Item') {
+            levelSection.classList.add('d-none');
+            levelSelect.removeAttribute('required');
+        } else {
+            levelSection.classList.remove('d-none');
+            levelSelect.setAttribute('required', 'required');
+        }
+    }
+</script>
+</body>
+</html>

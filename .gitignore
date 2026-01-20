@@ -1,0 +1,17 @@
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Environment variables (The most important part!)
+.env
+
+# Local Database
+instance/
+*.db
+
+# Virtual Environment
+venv/
+env/
+
+# OS files
+.DS_Store
